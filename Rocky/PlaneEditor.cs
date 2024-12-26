@@ -9,7 +9,7 @@ namespace RockyScript
 {
     // Token: 0x02000010 RID: 16
     [BepInPlugin("PhoeniX.RockyScript.HS2", "Plane Editor", "1.1.0")]
-    [BepInDependency("marco.kkapi", "1.4")]
+    [BepInDependency("marco.kkapi", ">=1.4")]
     [BepInProcess("StudioNEOV2.exe")]
     public class PlaneEditor : BaseUnityPlugin
     {
