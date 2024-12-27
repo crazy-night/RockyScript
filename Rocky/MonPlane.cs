@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using RootMotion;
 using Studio;
 using UnityEngine;
 
@@ -10,7 +9,7 @@ namespace RockyScript
     // Token: 0x0200000D RID: 13
     public class MonPlane : MonoBehaviour
     {
-        // Token: 0x0600005C RID: 92 RVA: 0x00003A3C File Offset: 0x00001C3C
+        // Token: 0x0600005C RID: 92 RVA: 0x000038C0 File Offset: 0x00001AC0
         private void Start()
         {
             this._windowRect = new Rect((float)((double)Screen.width / 2.0 - 50.0), (float)((double)Screen.height / 2.0 - 150.0), 300f, 300f);
@@ -39,75 +38,6 @@ namespace RockyScript
             this.curAllCameras = new List<OCICamera>();
         }
 
-        // Token: 0x0600005D RID: 93 RVA: 0x00003CA8 File Offset: 0x00001EA8
-        public void RefreshCam()
-        {
-            object obj = MonPlane.lockObj;
-            lock (obj)
-            {
-                if (this.m_renderTexture != null)
-                {
-                    this.m_renderTexture.Release();
-                }
-                this.m_renderTexture = new RenderTexture(this.cam_width, this.cam_height, 16, RenderTextureFormat.ARGB32);
-                if (this.cam_dickey != -1)
-                {
-                    try
-                    {
-                        ObjectCtrlInfo objectCtrlInfo = Singleton<Studio.Studio>.Instance.dicObjectCtrl[this.cam_dickey];
-                        if (objectCtrlInfo is OCICamera)
-                        {
-                            OCICamera ocicamera = (OCICamera)objectCtrlInfo;
-                            this.m_camTransform = ocicamera.objectItem.transform;
-                            this.planeCam.transform.position = this.m_camTransform.transform.position;
-                            this.planeCam.transform.rotation = this.m_camTransform.transform.rotation;
-                        }
-                    }
-                    catch
-                    {
-                        return;
-                    }
-                }
-                if (this._showPlane)
-                {
-                    this.planeCam.cullingMask |= this.mask;
-                }
-                else
-                {
-                    this.planeCam.cullingMask &= ~this.mask;
-                }
-                this.planeCam.cullingMask |= 512;
-                this.planeCam.cullingMask &= -16385;
-                this.planeCam.fieldOfView = (float)this.cam_fov;
-                this.planeCam.farClipPlane = (float)this.cam_far;
-                this.planeCam.orthographic = this._ortho;
-                this.planeCam.orthographicSize = (float)this.cam_ortho;
-                this.planeCam.targetTexture = this.m_renderTexture;
-                this.m_renderer.material.mainTexture = this.m_renderTexture;
-            }
-        }
-
-        // Token: 0x0600005E RID: 94 RVA: 0x00003E98 File Offset: 0x00002098
-        private void LateUpdate()
-        {
-            if (this.cam_dickey != -1 && this.m_camTransform != null && this.m_camTransform.hasChanged)
-            {
-                object obj = MonPlane.lockObj;
-                lock (obj)
-                {
-                    this.planeCam.transform.position = Vector3.Lerp(this.planeCam.transform.position, this.m_camTransform.transform.position, (float)this.cam_spd * Time.deltaTime);
-                    this.planeCam.transform.rotation = Quaternion.Slerp(this.planeCam.transform.rotation, this.m_camTransform.transform.rotation, (float)this.cam_spd * Time.deltaTime);
-                }
-            }
-        }
-
-        // Token: 0x06000061 RID: 97 RVA: 0x000022DC File Offset: 0x000004DC
-        private void OnDestroy()
-        {
-            this.m_renderTexture.Release();
-        }
-
-        // Token: 0x06000062 RID: 98 RVA: 0x0000404C File Offset: 0x0000224C
         public void DoMyWindow()
         {
             GUILayout.BeginVertical(Array.Empty<GUILayoutOption>());
@@ -253,6 +183,74 @@ namespace RockyScript
             GUILayout.EndVertical();
         }
 
+        // Token: 0x0600005F RID: 95 RVA: 0x000040D4 File Offset: 0x000022D4
+        public void RefreshCam()
+        {
+            object obj = MonPlane.lockObj;
+            lock (obj)
+            {
+                if (this.m_renderTexture != null)
+                {
+                    this.m_renderTexture.Release();
+                }
+                this.m_renderTexture = new RenderTexture(this.cam_width, this.cam_height, 16, RenderTextureFormat.ARGB32);
+                if (this.cam_dickey != -1)
+                {
+                    try
+                    {
+                        ObjectCtrlInfo objectCtrlInfo = Singleton<Studio.Studio>.Instance.dicObjectCtrl[this.cam_dickey];
+                        if (objectCtrlInfo is OCICamera)
+                        {
+                            OCICamera ocicamera = (OCICamera)objectCtrlInfo;
+                            this.m_camTransform = ocicamera.objectItem.transform;
+                            this.planeCam.transform.position = this.m_camTransform.transform.position;
+                            this.planeCam.transform.rotation = this.m_camTransform.transform.rotation;
+                        }
+                    }
+                    catch
+                    {
+                        return;
+                    }
+                }
+                if (this._showPlane)
+                {
+                    this.planeCam.cullingMask |= this.mask;
+                }
+                else
+                {
+                    this.planeCam.cullingMask &= ~this.mask;
+                }
+                this.planeCam.cullingMask |= 1 << 9;
+                this.planeCam.cullingMask &= ~(1 << 14);
+
+                this.planeCam.fieldOfView = (float)this.cam_fov;
+                this.planeCam.farClipPlane = (float)this.cam_far;
+                this.planeCam.orthographic = this._ortho;
+                this.planeCam.orthographicSize = (float)this.cam_ortho;
+                this.planeCam.targetTexture = this.m_renderTexture;
+                this.m_renderer.material.mainTexture = this.m_renderTexture;
+            }
+        }
+
+        // Token: 0x06000060 RID: 96 RVA: 0x00004294 File Offset: 0x00002494
+        private void LateUpdate()
+        {
+            if (this.cam_dickey != -1 && this.m_camTransform != null && this.m_camTransform.hasChanged)
+            {
+                object obj = MonPlane.lockObj;
+                lock (obj)
+                {
+                    this.planeCam.transform.position = Vector3.Lerp(this.planeCam.transform.position, this.m_camTransform.transform.position, (float)this.cam_spd * Time.deltaTime);
+                    this.planeCam.transform.rotation = Quaternion.Slerp(this.planeCam.transform.rotation, this.m_camTransform.transform.rotation, (float)this.cam_spd * Time.deltaTime);
+                }
+            }
+        }
+
+        // Token: 0x06000063 RID: 99 RVA: 0x000022DC File Offset: 0x000004DC
+        private void OnDestroy()
+        {
+            this.m_renderTexture.Release();
+        }
 
         // Token: 0x04000047 RID: 71
         public bool _showPlane;
@@ -329,6 +327,8 @@ namespace RockyScript
         // Token: 0x0400005F RID: 95
         public Camera[] curTestCameras;
 
+        // Token: 0x04000060 RID: 96
+        public OCIItem monplane;
 
         // Token: 0x04000061 RID: 97
         public int mask = 536870912;
@@ -337,3 +337,4 @@ namespace RockyScript
         public double plane_ratio;
     }
 }
+

@@ -110,6 +110,17 @@ namespace RockyScript
                     default:
                         throw new Exception("Unknown gui mode");
                 }
+
+                // close btn
+                Rect cbRect = new Rect(windowRect.width - 16, 3, 13, 13);
+                Color oldColor = GUI.color;
+                GUI.color = Color.red;
+                if (GUI.Button(cbRect, ""))
+                {
+                    VisibleGUI = false;
+                }
+                GUI.color = oldColor;
+
                 GUI.DragWindow();
             }
             catch (Exception value)
