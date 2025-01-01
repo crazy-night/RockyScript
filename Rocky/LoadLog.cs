@@ -14,6 +14,7 @@ namespace RockyScript
     [BepInPlugin("Rocky.LoadLog", "LoadLog", "0.0.2")]
     public class LoadLog : BaseUnityPlugin
     {
+        public enum Mode { Load = 0, Import = 1 };
         // Token: 0x0600000D RID: 13 RVA: 0x00002A78 File Offset: 0x00000C78
         public void Awake()
         {
@@ -33,9 +34,9 @@ namespace RockyScript
         internal static void ExtendedSceneSave(string path)
         {
             Dictionary<string, object> dictionary = new Dictionary<string, object>();
-            List<StudioGifResolveInfo> list = new List<StudioGifResolveInfo>();
-            List<StudioMonResolveInfo> list2 = new List<StudioMonResolveInfo>();
-            List<StudioMp4ResolveInfo> list3 = new List<StudioMp4ResolveInfo>();
+            List<StudioGifResolveInfo> gifList = new List<StudioGifResolveInfo>();
+            List<StudioMonResolveInfo> monList = new List<StudioMonResolveInfo>();
+            List<StudioMp4ResolveInfo> mp4List = new List<StudioMp4ResolveInfo>();
             Dictionary<int, ObjectCtrlInfo> dicObjectCtrl = Singleton<Studio.Studio>.Instance.dicObjectCtrl;
             foreach (ObjectCtrlInfo objectCtrlInfo in dicObjectCtrl.Values)
             {
@@ -43,12 +44,11 @@ namespace RockyScript
                 if (flag)
                 {
                     GameObject objectItem = ((OCIItem)objectCtrlInfo).objectItem;
-                    bool flag2 = objectItem.name.Equals("gifplane");
-                    if (flag2)
+                    if (objectItem.name.Equals("gifplane"))
                     {
                         GifPlane[] componentsInChildren = objectItem.GetComponentsInChildren<GifPlane>();
-                        bool flag3 = componentsInChildren != null;
-                        if (flag3)
+
+                        if (componentsInChildren != null)
                         {
                             GifPlane[] array = componentsInChildren;
                             int num = 0;
@@ -59,7 +59,7 @@ namespace RockyScript
                                 studioGifResolveInfo.dicKey = objectCtrlInfo.objectInfo.dicKey;
                                 studioGifResolveInfo.fps = gifPlane.fps;
                                 studioGifResolveInfo.gifpath = gifPlane.gifpath;
-                                list.Add(studioGifResolveInfo);
+                                gifList.Add(studioGifResolveInfo);
                                 string text = string.Concat(new string[]
                                 {
                                     "SaveGifInfo!dickey:",
@@ -73,12 +73,11 @@ namespace RockyScript
                             }
                         }
                     }
-                    bool flag4 = objectItem.name.Equals("mp4plane");
-                    if (flag4)
+                    if (objectItem.name.Equals("mp4plane"))
                     {
                         mp4plane[] componentsInChildren2 = objectItem.GetComponentsInChildren<mp4plane>();
-                        bool flag5 = componentsInChildren2 != null;
-                        if (flag5)
+
+                        if (componentsInChildren2 != null)
                         {
                             mp4plane[] array2 = componentsInChildren2;
                             int num2 = 0;
@@ -89,7 +88,7 @@ namespace RockyScript
                                 studioMp4ResolveInfo.dicKey = objectCtrlInfo.objectInfo.dicKey;
                                 studioMp4ResolveInfo.soundOpen = mp4plane._soundOpen;
                                 studioMp4ResolveInfo.mp4path = mp4plane.mp4path;
-                                list3.Add(studioMp4ResolveInfo);
+                                mp4List.Add(studioMp4ResolveInfo);
                                 string text2 = string.Concat(new string[]
                                 {
                                     "SaveMp4Info!dickey:",
@@ -105,12 +104,12 @@ namespace RockyScript
                     }
                     else
                     {
-                        bool flag6 = objectItem.name.Equals("MonPlane");
-                        if (flag6)
+
+                        if (objectItem.name.Equals("MonPlane"))
                         {
                             MonPlane[] componentsInChildren3 = objectItem.GetComponentsInChildren<MonPlane>();
-                            bool flag7 = componentsInChildren3 != null;
-                            if (flag7)
+
+                            if (componentsInChildren3 != null)
                             {
                                 MonPlane[] array3 = componentsInChildren3;
                                 int num3 = 0;
@@ -129,7 +128,7 @@ namespace RockyScript
                                     studioMonResolveInfo._ortho = monPlane._ortho;
                                     studioMonResolveInfo.cam_ortho = monPlane.cam_ortho;
                                     studioMonResolveInfo._showPlane = monPlane._showPlane;
-                                    list2.Add(studioMonResolveInfo);
+                                    monList.Add(studioMonResolveInfo);
                                     string text3 = "SaveMonInfo!dickey:" + studioMonResolveInfo.cam_dickey.ToString();
                                     LoadLog.Debug(text3);
                                 }
@@ -138,38 +137,26 @@ namespace RockyScript
                     }
                 }
             }
-            bool flag8 = list != null;
-            if (flag8)
+            if (gifList != null && gifList.Count != 0)
             {
-                bool flag9 = list.Count != 0;
-                if (flag9)
-                {
-                    dictionary.Add("GifInfo", (from x in list
-                                               select x.Serialize()).ToList<byte[]>());
-                }
+                dictionary.Add("GifInfo", (from x in gifList
+                                           select x.Serialize()).ToList<byte[]>());
             }
-            bool flag10 = list3 != null;
-            if (flag10)
+
+            if (mp4List != null && mp4List.Count != 0)
             {
-                bool flag11 = list3.Count != 0;
-                if (flag11)
-                {
-                    dictionary.Add("Mp4Info", (from x in list3
-                                               select x.Serialize()).ToList<byte[]>());
-                }
+                dictionary.Add("Mp4Info", (from x in mp4List
+                                           select x.Serialize()).ToList<byte[]>());
             }
-            bool flag12 = list2 != null;
-            if (flag12)
+
+
+            if (monList != null && monList.Count != 0)
             {
-                bool flag13 = list2.Count != 0;
-                if (flag13)
-                {
-                    dictionary.Add("MonInfo", (from x in list2
-                                               select x.Serialize()).ToList<byte[]>());
-                }
+                dictionary.Add("MonInfo", (from x in monList
+                                           select x.Serialize()).ToList<byte[]>());
             }
-            bool flag14 = dictionary.Count == 0;
-            if (flag14)
+
+            if (dictionary.Count == 0)
             {
                 ExtendedSave.SetSceneExtendedDataById("RockyScript", null);
             }
@@ -194,97 +181,8 @@ namespace RockyScript
         // Token: 0x06000011 RID: 17 RVA: 0x00002FC8 File Offset: 0x000011C8
         internal static void OnSceneLoad()
         {
-            PluginData sceneExtendedDataById = ExtendedSave.GetSceneExtendedDataById("RockyScript");
-            Dictionary<int, ObjectCtrlInfo> dicObjectCtrl = Singleton<Studio.Studio>.Instance.dicObjectCtrl;
-            bool flag = sceneExtendedDataById != null && sceneExtendedDataById.data.ContainsKey("GifInfo");
-            if (flag)
-            {
-                List<StudioGifResolveInfo> list = (from x in (object[])sceneExtendedDataById.data["GifInfo"]
-                                                   select StudioGifResolveInfo.Deserialize((byte[])x)).ToList<StudioGifResolveInfo>();
-                foreach (StudioGifResolveInfo studioGifResolveInfo in list)
-                {
-                    ObjectCtrlInfo objectCtrlInfo = dicObjectCtrl[studioGifResolveInfo.dicKey];
-                    bool flag2 = objectCtrlInfo is OCIItem;
-                    if (flag2)
-                    {
-                        GameObject objectItem = ((OCIItem)objectCtrlInfo).objectItem;
-                        bool flag3 = objectItem.name.Equals("gifplane");
-                        if (flag3)
-                        {
-                            GifPlane componentInChildren = objectItem.GetComponentInChildren<GifPlane>();
-                            bool flag4 = componentInChildren != null;
-                            if (flag4)
-                            {
-                                componentInChildren.fps = studioGifResolveInfo.fps;
-                                componentInChildren.gifpath = studioGifResolveInfo.gifpath;
-                                componentInChildren.LoadGif();
-                            }
-                        }
-                    }
-                }
-            }
-            bool flag5 = sceneExtendedDataById != null && sceneExtendedDataById.data.ContainsKey("Mp4Info");
-            if (flag5)
-            {
-                List<StudioMp4ResolveInfo> list2 = (from x in (object[])sceneExtendedDataById.data["Mp4Info"]
-                                                    select StudioMp4ResolveInfo.Deserialize((byte[])x)).ToList<StudioMp4ResolveInfo>();
-                foreach (StudioMp4ResolveInfo studioMp4ResolveInfo in list2)
-                {
-                    ObjectCtrlInfo objectCtrlInfo2 = dicObjectCtrl[studioMp4ResolveInfo.dicKey];
-                    bool flag6 = objectCtrlInfo2 is OCIItem;
-                    if (flag6)
-                    {
-                        GameObject objectItem2 = ((OCIItem)objectCtrlInfo2).objectItem;
-                        bool flag7 = objectItem2.name.Equals("mp4plane");
-                        if (flag7)
-                        {
-                            mp4plane componentInChildren2 = objectItem2.GetComponentInChildren<mp4plane>();
-                            bool flag8 = componentInChildren2 != null;
-                            if (flag8)
-                            {
-                                componentInChildren2._soundOpen = studioMp4ResolveInfo.soundOpen;
-                                componentInChildren2.mp4path = studioMp4ResolveInfo.mp4path;
-                                componentInChildren2.Loadmp4();
-                            }
-                        }
-                    }
-                }
-            }
-            bool flag9 = sceneExtendedDataById != null && sceneExtendedDataById.data.ContainsKey("MonInfo");
-            if (flag9)
-            {
-                List<StudioMonResolveInfo> list3 = (from x in (object[])sceneExtendedDataById.data["MonInfo"]
-                                                    select StudioMonResolveInfo.Deserialize((byte[])x)).ToList<StudioMonResolveInfo>();
-                foreach (StudioMonResolveInfo studioMonResolveInfo in list3)
-                {
-                    ObjectCtrlInfo objectCtrlInfo3 = dicObjectCtrl[studioMonResolveInfo.dicKey];
-                    bool flag10 = objectCtrlInfo3 is OCIItem;
-                    if (flag10)
-                    {
-                        GameObject objectItem3 = ((OCIItem)objectCtrlInfo3).objectItem;
-                        bool flag11 = objectItem3.name.Equals("MonPlane");
-                        if (flag11)
-                        {
-                            MonPlane componentInChildren3 = objectItem3.GetComponentInChildren<MonPlane>();
-                            bool flag12 = componentInChildren3 != null;
-                            if (flag12)
-                            {
-                                componentInChildren3.cam_dickey = studioMonResolveInfo.cam_dickey;
-                                componentInChildren3.cam_far = studioMonResolveInfo.cam_far;
-                                componentInChildren3.cam_fov = studioMonResolveInfo.cam_fov;
-                                componentInChildren3.cam_height = studioMonResolveInfo.cam_height;
-                                componentInChildren3.cam_spd = studioMonResolveInfo.cam_spd;
-                                componentInChildren3.cam_width = studioMonResolveInfo.cam_width;
-                                componentInChildren3.cam_tex = studioMonResolveInfo.cam_tex;
-                                componentInChildren3._ortho = studioMonResolveInfo._ortho;
-                                componentInChildren3.cam_ortho = studioMonResolveInfo.cam_ortho;
-                                componentInChildren3._showPlane = studioMonResolveInfo._showPlane;
-                                componentInChildren3.RefreshCam();
-                            }
-                        }
-                    }
-                }
-            }
+
+            LoadInfo(Mode.Load);
         }
 
         // Token: 0x06000012 RID: 18 RVA: 0x000020B1 File Offset: 0x000002B1
@@ -299,99 +197,154 @@ namespace RockyScript
         // Token: 0x06000013 RID: 19 RVA: 0x00003414 File Offset: 0x00001614
         internal static void OnSceneImport()
         {
+            LoadInfo(Mode.Import);
+        }
+        internal static void LoadInfo(Mode mode)
+        {
             PluginData sceneExtendedDataById = ExtendedSave.GetSceneExtendedDataById("RockyScript");
-            Dictionary<int, ObjectInfo> dicObject = Singleton<Studio.Studio>.Instance.sceneInfo.dicObject;
-            Dictionary<int, ObjectInfo> dicImport = Singleton<Studio.Studio>.Instance.sceneInfo.dicImport;
-            int num = dicObject.Count - dicImport.Count;
             Dictionary<int, ObjectCtrlInfo> dicObjectCtrl = Singleton<Studio.Studio>.Instance.dicObjectCtrl;
-            bool flag = sceneExtendedDataById != null && sceneExtendedDataById.data.ContainsKey("GifInfo");
-            if (flag)
+            Dictionary<int, int> dicReverseChangeKey = new Dictionary<int, int>();
+            if (sceneExtendedDataById != null)
             {
-                List<StudioGifResolveInfo> list = (from x in (object[])sceneExtendedDataById.data["GifInfo"]
-                                                   select StudioGifResolveInfo.Deserialize((byte[])x)).ToList<StudioGifResolveInfo>();
-                foreach (StudioGifResolveInfo studioGifResolveInfo in list)
+                if (mode == Mode.Import)
                 {
-                    ObjectCtrlInfo objectCtrlInfo = dicObjectCtrl[studioGifResolveInfo.dicKey + num];
-                    bool flag2 = objectCtrlInfo is OCIItem;
-                    if (flag2)
+                    try
                     {
-                        GameObject objectItem = ((OCIItem)objectCtrlInfo).objectItem;
-                        bool flag3 = objectItem.name.Equals("gifplane");
-                        if (flag3)
+                        dicReverseChangeKey = Singleton<Studio.Studio>.Instance.sceneInfo.dicChangeKey.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+                    }
+                    catch (Exception)
+                    {
+
+                        throw;
+                    }
+                }
+                if (sceneExtendedDataById.data.ContainsKey("GifInfo"))
+                {
+                    List<StudioGifResolveInfo> list = (from x in (object[])sceneExtendedDataById.data["GifInfo"]
+                                                       select StudioGifResolveInfo.Deserialize((byte[])x)).ToList<StudioGifResolveInfo>();
+
+                    foreach (StudioGifResolveInfo studioGifResolveInfo in list)
+                    {
+                        int newDickey = -1;
+                        if (mode == Mode.Load)
                         {
-                            GifPlane componentInChildren = objectItem.GetComponentInChildren<GifPlane>();
-                            bool flag4 = componentInChildren != null;
-                            if (flag4)
+                            newDickey = studioGifResolveInfo.dicKey;
+                        }
+                        else if (mode == Mode.Import)
+                        {
+                            newDickey = dicReverseChangeKey[studioGifResolveInfo.dicKey];
+                        }
+                        else
+                        {
+                            LoadLog.Debug("Gif Plane: Unknown Mode!\n");
+                        }
+                        ObjectCtrlInfo objectCtrlInfo = dicObjectCtrl[newDickey];
+
+                        if (objectCtrlInfo != null && objectCtrlInfo is OCIItem)
+                        {
+                            GameObject objectItem = ((OCIItem)objectCtrlInfo).objectItem;
+                            if (objectItem.name.Equals("gifplane"))
                             {
-                                componentInChildren.fps = studioGifResolveInfo.fps;
-                                componentInChildren.gifpath = studioGifResolveInfo.gifpath;
-                                componentInChildren.LoadGif();
+                                GifPlane componentInChildren = objectItem.GetComponentInChildren<GifPlane>();
+
+                                if (componentInChildren != null)
+                                {
+                                    componentInChildren.fps = studioGifResolveInfo.fps;
+                                    componentInChildren.gifpath = studioGifResolveInfo.gifpath;
+                                    componentInChildren.LoadGif();
+                                }
                             }
                         }
                     }
                 }
-            }
-            bool flag5 = sceneExtendedDataById != null && sceneExtendedDataById.data.ContainsKey("Mp4Info");
-            if (flag5)
-            {
-                List<StudioMp4ResolveInfo> list2 = (from x in (object[])sceneExtendedDataById.data["Mp4Info"]
-                                                    select StudioMp4ResolveInfo.Deserialize((byte[])x)).ToList<StudioMp4ResolveInfo>();
-                foreach (StudioMp4ResolveInfo studioMp4ResolveInfo in list2)
+                ;
+                if (sceneExtendedDataById.data.ContainsKey("Mp4Info"))
                 {
-                    ObjectCtrlInfo objectCtrlInfo2 = dicObjectCtrl[studioMp4ResolveInfo.dicKey + num];
-                    bool flag6 = objectCtrlInfo2 is OCIItem;
-                    if (flag6)
+                    List<StudioMp4ResolveInfo> list2 = (from x in (object[])sceneExtendedDataById.data["Mp4Info"]
+                                                        select StudioMp4ResolveInfo.Deserialize((byte[])x)).ToList<StudioMp4ResolveInfo>();
+                    foreach (StudioMp4ResolveInfo studioMp4ResolveInfo in list2)
                     {
-                        GameObject objectItem2 = ((OCIItem)objectCtrlInfo2).objectItem;
-                        bool flag7 = objectItem2.name.Equals("mp4plane");
-                        if (flag7)
+                        int newDickey = -1;
+                        if (mode == Mode.Load)
                         {
-                            mp4plane componentInChildren2 = objectItem2.GetComponentInChildren<mp4plane>();
-                            bool flag8 = componentInChildren2 != null;
-                            if (flag8)
+                            newDickey = studioMp4ResolveInfo.dicKey;
+                        }
+                        else if (mode == Mode.Import)
+                        {
+                            newDickey = dicReverseChangeKey[studioMp4ResolveInfo.dicKey];
+                        }
+                        else
+                        {
+                            LoadLog.Debug("Mp4 Plane: Unknown Mode!\n");
+                        }
+                        ObjectCtrlInfo objectCtrlInfo2 = dicObjectCtrl[newDickey];
+                        ;
+                        if (objectCtrlInfo2 != null && objectCtrlInfo2 is OCIItem)
+                        {
+                            GameObject objectItem2 = ((OCIItem)objectCtrlInfo2).objectItem;
+
+                            if (objectItem2.name.Equals("mp4plane"))
                             {
-                                componentInChildren2._soundOpen = studioMp4ResolveInfo.soundOpen;
-                                componentInChildren2.mp4path = studioMp4ResolveInfo.mp4path;
-                                componentInChildren2.Loadmp4();
+                                mp4plane componentInChildren2 = objectItem2.GetComponentInChildren<mp4plane>();
+
+                                if (componentInChildren2 != null)
+                                {
+                                    componentInChildren2._soundOpen = studioMp4ResolveInfo.soundOpen;
+                                    componentInChildren2.mp4path = studioMp4ResolveInfo.mp4path;
+                                    componentInChildren2.Loadmp4();
+                                }
                             }
                         }
                     }
                 }
-            }
-            bool flag9 = sceneExtendedDataById != null && sceneExtendedDataById.data.ContainsKey("MonInfo");
-            if (flag9)
-            {
-                List<StudioMonResolveInfo> list3 = (from x in (object[])sceneExtendedDataById.data["MonInfo"]
-                                                    select StudioMonResolveInfo.Deserialize((byte[])x)).ToList<StudioMonResolveInfo>();
-                foreach (StudioMonResolveInfo studioMonResolveInfo in list3)
+
+                if (sceneExtendedDataById.data.ContainsKey("MonInfo"))
                 {
-                    ObjectCtrlInfo objectCtrlInfo3 = dicObjectCtrl[studioMonResolveInfo.dicKey + num];
-                    bool flag10 = objectCtrlInfo3 is OCIItem;
-                    if (flag10)
+                    List<StudioMonResolveInfo> list3 = (from x in (object[])sceneExtendedDataById.data["MonInfo"]
+                                                        select StudioMonResolveInfo.Deserialize((byte[])x)).ToList<StudioMonResolveInfo>();
+                    foreach (StudioMonResolveInfo studioMonResolveInfo in list3)
                     {
-                        GameObject objectItem3 = ((OCIItem)objectCtrlInfo3).objectItem;
-                        bool flag11 = objectItem3.name.Equals("MonPlane");
-                        if (flag11)
+                        int newDickey = -1;
+                        if (mode == Mode.Load)
                         {
-                            MonPlane componentInChildren3 = objectItem3.GetComponentInChildren<MonPlane>();
-                            bool flag12 = componentInChildren3 != null;
-                            if (flag12)
+                            newDickey = studioMonResolveInfo.dicKey;
+                        }
+                        else if (mode == Mode.Import)
+                        {
+                            newDickey = dicReverseChangeKey[studioMonResolveInfo.dicKey];
+                        }
+                        else
+                        {
+                            LoadLog.Debug("Mp4 Plane: Unknown Mode!\n");
+                        }
+                        ObjectCtrlInfo objectCtrlInfo3 = dicObjectCtrl[newDickey];
+
+                        if (objectCtrlInfo3 != null && objectCtrlInfo3 is OCIItem)
+                        {
+                            GameObject objectItem3 = ((OCIItem)objectCtrlInfo3).objectItem;
+
+                            if (objectItem3.name.Equals("MonPlane"))
                             {
-                                componentInChildren3.cam_dickey = studioMonResolveInfo.cam_dickey;
-                                componentInChildren3.cam_far = studioMonResolveInfo.cam_far;
-                                componentInChildren3.cam_fov = studioMonResolveInfo.cam_fov;
-                                componentInChildren3.cam_height = studioMonResolveInfo.cam_height;
-                                componentInChildren3.cam_spd = studioMonResolveInfo.cam_spd;
-                                componentInChildren3.cam_width = studioMonResolveInfo.cam_width;
-                                componentInChildren3.cam_tex = studioMonResolveInfo.cam_tex;
-                                componentInChildren3._ortho = studioMonResolveInfo._ortho;
-                                componentInChildren3.cam_ortho = studioMonResolveInfo.cam_ortho;
-                                componentInChildren3._showPlane = studioMonResolveInfo._showPlane;
-                                componentInChildren3.RefreshCam();
+                                MonPlane componentInChildren3 = objectItem3.GetComponentInChildren<MonPlane>();
+                                if (componentInChildren3 != null)
+                                {
+                                    componentInChildren3.cam_dickey = studioMonResolveInfo.cam_dickey;
+                                    componentInChildren3.cam_far = studioMonResolveInfo.cam_far;
+                                    componentInChildren3.cam_fov = studioMonResolveInfo.cam_fov;
+                                    componentInChildren3.cam_height = studioMonResolveInfo.cam_height;
+                                    componentInChildren3.cam_spd = studioMonResolveInfo.cam_spd;
+                                    componentInChildren3.cam_width = studioMonResolveInfo.cam_width;
+                                    componentInChildren3.cam_tex = studioMonResolveInfo.cam_tex;
+                                    componentInChildren3._ortho = studioMonResolveInfo._ortho;
+                                    componentInChildren3.cam_ortho = studioMonResolveInfo.cam_ortho;
+                                    componentInChildren3._showPlane = studioMonResolveInfo._showPlane;
+                                    componentInChildren3.RefreshCam();
+                                }
                             }
                         }
                     }
                 }
+
             }
         }
     }

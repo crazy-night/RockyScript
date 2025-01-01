@@ -96,7 +96,13 @@ namespace RockyScript
                 switch (this.guiMode)
                 {
                     case PlaneEditorUI.GuiModeType.None:
-                        GUILayout.Label("Please select a plane object", this.largeLabel, Array.Empty<GUILayoutOption>());
+                        GUILayout.FlexibleSpace();
+                        GUILayout.BeginHorizontal();
+                        GUILayout.FlexibleSpace();
+                        GUILayout.Label("<color=#00ffff>" + "Please select a plane to edit." + "</color>", largeLabel);
+                        GUILayout.FlexibleSpace();
+                        GUILayout.EndHorizontal();
+                        GUILayout.FlexibleSpace();
                         break;
                     case PlaneEditorUI.GuiModeType.MON:
                         this.GUIMon();

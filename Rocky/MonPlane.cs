@@ -62,7 +62,7 @@ namespace RockyScript
             this.spdstring = GUILayout.TextField(this.spdstring, 3, Array.Empty<GUILayoutOption>());
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-            GUILayout.Label("TextureSize:", Array.Empty<GUILayoutOption>());
+            GUILayout.Label("TextureResolution:", Array.Empty<GUILayoutOption>());
             this.texstring = GUILayout.TextField(this.texstring, 2, Array.Empty<GUILayoutOption>());
             GUILayout.EndHorizontal();
             if (this._ortho)
@@ -177,7 +177,7 @@ namespace RockyScript
                 double num3 = (double)(base.gameObject.GetComponent<MeshFilter>().mesh.bounds.size.y * Mathf.Abs(base.gameObject.transform.lossyScale.y));
                 this.plane_ratio = num3 / num2;
                 this.cam_width = this.cam_tex;
-                this.cam_height = (int)((double)this.cam_tex * this.plane_ratio);
+                this.cam_height = Math.Min(1<<14,(int)((double)this.cam_tex *this.plane_ratio));
                 this.RefreshCam();
             }
             GUILayout.EndVertical();
@@ -191,6 +191,8 @@ namespace RockyScript
             {
                 if (this.m_renderTexture != null)
                 {
+                    this.planeCam.targetTexture = null;
+                    this.m_renderer.material.mainTexture = null;
                     this.m_renderTexture.Release();
                 }
                 this.m_renderTexture = new RenderTexture(this.cam_width, this.cam_height, 16, RenderTextureFormat.ARGB32);
@@ -249,6 +251,8 @@ namespace RockyScript
         // Token: 0x06000063 RID: 99 RVA: 0x000022DC File Offset: 0x000004DC
         private void OnDestroy()
         {
+            this.planeCam.targetTexture = null;
+            this.m_renderer.material.mainTexture = null;
             this.m_renderTexture.Release();
         }
 
