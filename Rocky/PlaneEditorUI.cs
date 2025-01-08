@@ -38,7 +38,7 @@ namespace RockyScript
                 this.VisibleGUI = !this.VisibleGUI;
                 if (this.VisibleGUI)
                 {
-                    this.windowRect = new Rect((float)PlaneEditor.UIXPosition.Value, (float)PlaneEditor.UIYPosition.Value, (float)Math.Max(600, PlaneEditor.UIWidth.Value), (float)Math.Max(400, PlaneEditor.UIHeight.Value));
+                    this.windowRect = new Rect((float)PlaneEditor.UIXPosition.Value, (float)PlaneEditor.UIYPosition.Value, (float)Math.Max(300, PlaneEditor.UIWidth.Value), (float)Math.Max(500, PlaneEditor.UIHeight.Value));
                 }
                 else
                 {
@@ -215,7 +215,7 @@ namespace RockyScript
         private readonly string windowTitle = "Studio Plane Editor";
 
         // Token: 0x04000083 RID: 131
-        private Rect windowRect = new Rect(0f, 300f, 600f, 400f);
+        private Rect windowRect = new Rect(0f, 300f, 300f, 500f);
 
         // Token: 0x04000084 RID: 132
         private bool mouseInWindow;

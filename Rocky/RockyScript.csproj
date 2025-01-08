@@ -32,7 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
-      <HintPath>F:\Users\Administrator\Downloads\Compressed\BepInEx_x64_5.1.0.0\BepInEx\core\0Harmony.dll</HintPath>
+      <HintPath>F:\Users\Administrator\Downloads\Compressed\BepInEx_x64_5.4.21.0\BepInEx\core\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
@@ -44,11 +44,11 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx">
-      <HintPath>F:\Users\Administrator\Downloads\Compressed\BepInEx_x64_5.1.0.0\BepInEx\core\BepInEx.dll</HintPath>
+      <HintPath>F:\Users\Administrator\Downloads\Compressed\BepInEx_x64_5.4.21.0\BepInEx\core\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx.Harmony">
-      <HintPath>F:\Users\Administrator\Downloads\Compressed\BepInEx_x64_5.1.0.0\BepInEx\core\BepInEx.Harmony.dll</HintPath>
+      <HintPath>F:\Users\Administrator\Downloads\Compressed\BepInEx_x64_5.4.21.0\BepInEx\core\BepInEx.Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="HS2API">
@@ -91,6 +91,7 @@
   <ItemGroup>
     <Compile Include="GifPlane.cs" />
     <Compile Include="LoadLog.cs" />
+    <Compile Include="LoadLog0.cs" />
     <Compile Include="LocalDialog.cs" />
     <Compile Include="PlaneEditor.cs" />
     <Compile Include="PlaneEditorMgr.cs" />

@@ -14,12 +14,12 @@ namespace RockyScript
         // Token: 0x06000003 RID: 3 RVA: 0x00002394 File Offset: 0x00000594
         public void DoMyWindow()
         {
-            GUILayout.BeginVertical(Array.Empty<GUILayoutOption>());
-            GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-            GUILayout.Label("fps:", Array.Empty<GUILayoutOption>());
-            this.fpsstring = GUILayout.TextField(this.fpsstring, 2, Array.Empty<GUILayoutOption>());
+            GUILayout.BeginVertical();
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("fps:" );
+            this.fpsstring = GUILayout.TextField(this.fpsstring, 2 );
             GUILayout.EndHorizontal();
-            bool flag = GUILayout.Button("Load Gif", Array.Empty<GUILayoutOption>());
+            bool flag = GUILayout.Button("Load Gif" );
             if (flag)
             {
                 try

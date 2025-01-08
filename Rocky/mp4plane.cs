@@ -19,11 +19,11 @@ namespace RockyScript
         // Token: 0x06000069 RID: 105 RVA: 0x00004634 File Offset: 0x00002834
         public void DoMyWindow()
         {
-            GUILayout.BeginVertical(Array.Empty<GUILayoutOption>());
+            GUILayout.BeginVertical();
             bool soundOpen = this._soundOpen;
             if (soundOpen)
             {
-                bool flag = GUILayout.Button("Current:Sound On", Array.Empty<GUILayoutOption>());
+                bool flag = GUILayout.Button("Current:Sound On" );
                 if (flag)
                 {
                     this._soundOpen = false;
@@ -31,13 +31,13 @@ namespace RockyScript
             }
             else
             {
-                bool flag2 = GUILayout.Button("Current:Sound off", Array.Empty<GUILayoutOption>());
+                bool flag2 = GUILayout.Button("Current:Sound off" );
                 if (flag2)
                 {
                     this._soundOpen = true;
                 }
             }
-            bool flag3 = GUILayout.Button("Load mp4", Array.Empty<GUILayoutOption>());
+            bool flag3 = GUILayout.Button("Load mp4" );
             if (flag3)
             {
                 this.Selectmp4();
@@ -46,7 +46,7 @@ namespace RockyScript
             bool isPlaying = this.vp.isPlaying;
             if (isPlaying)
             {
-                bool flag5 = GUILayout.Button("Current:movie is playing", Array.Empty<GUILayoutOption>());
+                bool flag5 = GUILayout.Button("Current:movie is playing" );
                 if (flag5)
                 {
                     this.vp.Pause();
@@ -54,7 +54,7 @@ namespace RockyScript
             }
             else
             {
-                bool flag6 = GUILayout.Button("Current:movie is paused", Array.Empty<GUILayoutOption>());
+                bool flag6 = GUILayout.Button("Current:movie is paused" );
                 if (flag6)
                 {
                     this.vp.Play();
@@ -62,13 +62,13 @@ namespace RockyScript
                 bool flag7 = this.vp.frameCount > 0UL;
                 if (flag7)
                 {
-                    GUILayout.Box(string.Format("Frame:{0:D} / {1:D}", this.vp.frame, this.vp.frameCount), Array.Empty<GUILayoutOption>());
-                    this.sliderValue = GUILayout.HorizontalSlider(this.sliderValue, 0f, this.maxSliderValue, Array.Empty<GUILayoutOption>());
+                    GUILayout.Box(string.Format("Frame:{0:D} / {1:D}", this.vp.frame, this.vp.frameCount) );
+                    this.sliderValue = GUILayout.HorizontalSlider(this.sliderValue, 0f, this.maxSliderValue );
                     this.vp.frame = (long)(this.vp.frameCount * this.sliderValue);
-                    GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-                    GUILayout.Label(string.Format("PlaySpeed:{0:G3}", (float)this.playspeed / 1000f), Array.Empty<GUILayoutOption>());
-                    this.spdstring = GUILayout.TextField(this.spdstring, 4, Array.Empty<GUILayoutOption>());
-                    bool flag8 = GUILayout.Button("OK", Array.Empty<GUILayoutOption>());
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label(string.Format("PlaySpeed:{0:G3}", (float)this.playspeed / 1000f) );
+                    this.spdstring = GUILayout.TextField(this.spdstring, 4 );
+                    bool flag8 = GUILayout.Button("OK" );
                     if (flag8)
                     {
                         try

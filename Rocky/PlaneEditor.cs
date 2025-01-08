@@ -1,15 +1,16 @@
-﻿using System;
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using KKAPI;
 using KKAPI.Studio;
+using KKAPI.Studio.SaveLoad;
 using UnityEngine;
 
 namespace RockyScript
 {
     // Token: 0x02000010 RID: 16
     [BepInPlugin("PhoeniX.RockyScript.HS2", "Plane Editor", "1.1.0")]
-    [BepInDependency("marco.kkapi")]
+    [BepInDependency(KoikatuAPI.GUID, "1.4")]
     [BepInProcess("StudioNEOV2.exe")]
     public class PlaneEditor : BaseUnityPlugin
     {
@@ -64,8 +65,11 @@ namespace RockyScript
             PlaneEditor.VerboseMessage = base.Config.Bind<bool>("Debug", "Print verbose info", false, "Print more debug info to console.");
             PlaneEditor.UIXPosition = base.Config.Bind<int>("GUI", "Main GUI X position", 50, "X offset from left in pixel");
             PlaneEditor.UIYPosition = base.Config.Bind<int>("GUI", "Main GUI Y position", 300, "Y offset from top in pixel");
-            PlaneEditor.UIWidth = base.Config.Bind<int>("GUI", "Main GUI window width", 600, "Main window width, minimum 600, set it when UI is hided.");
-            PlaneEditor.UIHeight = base.Config.Bind<int>("GUI", "Main GUI window height", 400, "Main window height, minimum 400, set it when UI is hided.");
+            PlaneEditor.UIWidth = base.Config.Bind<int>("GUI", "Main GUI window width", 300, "Main window width, minimum 200, set it when UI is hided.");
+            PlaneEditor.UIHeight = base.Config.Bind<int>("GUI", "Main GUI window height", 500, "Main window height, minimum 100, set it when UI is hided.");
+
+            StudioSaveLoadApi.RegisterExtraBehaviour<LoadLog>("RockyScript");
+
             UnityEngine.Object.DontDestroyOnLoad(new GameObject("Plane Editor"));
             PlaneEditorMgr.Install(base.gameObject);
         }

@@ -37,5 +37,24 @@ namespace RockyScript
         {
             return MessagePackSerializer.Serialize<StudioGifResolveInfo>(this);
         }
+        public StudioGifResolveInfo(byte[] data):this(Deserialize(data))
+        {
+        }
+        public StudioGifResolveInfo(StudioGifResolveInfo instance) : this(instance.dicKey, instance.fps, instance.gifpath)
+        {
+        }
+        public StudioGifResolveInfo(int dicKey, GifPlane gifPlane) : this(dicKey, gifPlane.fps, gifPlane.gifpath)
+        {
+        }
+        public StudioGifResolveInfo(int dicKey, short fps, string gifpath)
+        {
+            this.dicKey = dicKey;
+            this.fps = fps;
+            this.gifpath = gifpath;
+        }
+        public StudioGifResolveInfo()
+        {
+            this.dicKey = -1;
+        }
     }
 }

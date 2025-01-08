@@ -37,5 +37,24 @@ namespace RockyScript
         {
             return MessagePackSerializer.Serialize<StudioMp4ResolveInfo>(this);
         }
+        public StudioMp4ResolveInfo(byte[] data):this(Deserialize(data))
+        {
+        }
+        public StudioMp4ResolveInfo(StudioMp4ResolveInfo instance):this(instance.dicKey, instance.soundOpen, instance.mp4path)
+        {
+        }
+        public StudioMp4ResolveInfo(int dicKey, mp4plane plane) : this(dicKey, plane._soundOpen, plane.mp4path)
+        {
+        }
+        public StudioMp4ResolveInfo(int dicKey, bool soundOpen, string mp4path)
+        {
+            this.dicKey = dicKey;
+            this.soundOpen = soundOpen;
+            this.mp4path = mp4path;
+        }
+        public StudioMp4ResolveInfo()
+        {
+            this.dicKey = -1;
+        }
     }
 }
