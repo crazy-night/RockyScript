@@ -1,75 +1,64 @@
-﻿using System;
+﻿using KKAPI.Utilities;
+using RockyScript.File;
+using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Video;
 
 namespace RockyScript
 {
-    // Token: 0x0200000F RID: 15
-    public class mp4plane : MonoBehaviour
+    public class mp4plane : RockyPlane
     {
-        // Token: 0x06000067 RID: 103 RVA: 0x000022FD File Offset: 0x000004FD
-        private void Start()
+        public override void Start()
         {
             this.vp = base.gameObject.AddComponent<VideoPlayer>();
         }
 
-        // Token: 0x06000068 RID: 104 RVA: 0x000045DC File Offset: 0x000027DC
-
-        // Token: 0x06000069 RID: 105 RVA: 0x00004634 File Offset: 0x00002834
-        public void DoMyWindow()
+        public override void DoMyWindow()
         {
             GUILayout.BeginVertical();
             bool soundOpen = this._soundOpen;
             if (soundOpen)
             {
-                bool flag = GUILayout.Button("Current:Sound On" );
-                if (flag)
+                if (GUILayout.Button("Current:Sound On", IMGUIUtils.EmptyLayoutOptions))
                 {
                     this._soundOpen = false;
                 }
             }
             else
             {
-                bool flag2 = GUILayout.Button("Current:Sound off" );
-                if (flag2)
+                if (GUILayout.Button("Current:Sound off", IMGUIUtils.EmptyLayoutOptions))
                 {
                     this._soundOpen = true;
                 }
             }
-            bool flag3 = GUILayout.Button("Load mp4" );
-            if (flag3)
+            if (GUILayout.Button("Load mp4", IMGUIUtils.EmptyLayoutOptions))
             {
                 this.Selectmp4();
-                this.Loadmp4();
+                this.LoadMp4();
             }
-            bool isPlaying = this.vp.isPlaying;
-            if (isPlaying)
+            if (this.vp.isPlaying)
             {
-                bool flag5 = GUILayout.Button("Current:movie is playing" );
-                if (flag5)
+                if (GUILayout.Button("Current:movie is playing", IMGUIUtils.EmptyLayoutOptions))
                 {
                     this.vp.Pause();
                 }
             }
             else
             {
-                bool flag6 = GUILayout.Button("Current:movie is paused" );
-                if (flag6)
+                if (GUILayout.Button("Current:movie is paused",IMGUIUtils.EmptyLayoutOptions ))
                 {
                     this.vp.Play();
                 }
-                bool flag7 = this.vp.frameCount > 0UL;
-                if (flag7)
+                if (this.vp.frameCount > 0UL)
                 {
-                    GUILayout.Box(string.Format("Frame:{0:D} / {1:D}", this.vp.frame, this.vp.frameCount) );
-                    this.sliderValue = GUILayout.HorizontalSlider(this.sliderValue, 0f, this.maxSliderValue );
+                    GUILayout.Box(string.Format("Frame:{0:D} / {1:D}", this.vp.frame, this.vp.frameCount),IMGUIUtils.EmptyLayoutOptions );
+                    this.sliderValue = GUILayout.HorizontalSlider(this.sliderValue, 0f, this.maxSliderValue, IMGUIUtils.EmptyLayoutOptions);
                     this.vp.frame = (long)(this.vp.frameCount * this.sliderValue);
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label(string.Format("PlaySpeed:{0:G3}", (float)this.playspeed / 1000f) );
-                    this.spdstring = GUILayout.TextField(this.spdstring, 4 );
-                    bool flag8 = GUILayout.Button("OK" );
-                    if (flag8)
+                    GUILayout.Label(string.Format("PlaySpeed:{0:G3}", (float)this.playspeed / 1000f),IMGUIUtils.EmptyLayoutOptions );
+                    this.spdstring = GUILayout.TextField(this.spdstring, 4,IMGUIUtils.EmptyLayoutOptions );
+                    if (GUILayout.Button("OK" ))
                     {
                         try
                         {
@@ -80,8 +69,7 @@ namespace RockyScript
                             this.playspeed = 1000;
                             this.spdstring = "1000";
                         }
-                        bool flag9 = this.playspeed < 0;
-                        if (flag9)
+                        if (this.playspeed < 0)
                         {
                             this.playspeed = 1000;
                             this.spdstring = "1000";
@@ -95,7 +83,6 @@ namespace RockyScript
             GUI.DragWindow();
         }
 
-        // Token: 0x0600006A RID: 106 RVA: 0x000048BC File Offset: 0x00002ABC
         private void Selectmp4()
         {
             OpenFileName openFileName = new OpenFileName();
@@ -123,15 +110,14 @@ namespace RockyScript
             }
         }
 
-        // Token: 0x0600006B RID: 107 RVA: 0x000049A0 File Offset: 0x00002BA0
-        public void Loadmp4()
+        public void LoadMp4()
         {
-            bool flag = this.mp4path.Length > 0;
-            if (flag)
+            if (this.mp4path.Length > 0)
             {
                 this.vp.url = this.mp4path;
                 this.vp.SetDirectAudioMute(0, !this._soundOpen);
                 this.vp.isLooping = true;
+                this.vp.aspectRatio = VideoAspectRatio.FitInside;
                 this.vp.renderMode = VideoRenderMode.MaterialOverride;
                 this.vp.targetMaterialRenderer = base.GetComponent<Renderer>();
                 this.vp.targetMaterialProperty = "_MainTex";
@@ -140,26 +126,38 @@ namespace RockyScript
             }
         }
 
+        public override void Copy<T>(T plane)
+        {
+            Debug("Copy mp4plane begin!");
+            if (plane == null)
+            {
+                throw new ArgumentNullException("Reference of mp4plane is null!");
+            }
+            else if (plane is mp4plane mp4Plane)
+            {
+                this._soundOpen = mp4Plane._soundOpen;
+                this.mp4path = mp4Plane.mp4path;
+                this.LoadMp4();
+            }
+            else
+            {
+                throw new Exception("Not mp4plane!");
+            }
+            Debug("Copy mp4plane end!");
+        }
 
-        // Token: 0x04000067 RID: 103
         public bool _soundOpen = true;
 
-        // Token: 0x04000068 RID: 104
         public int playspeed = 1000;
 
-        // Token: 0x04000069 RID: 105
         private string spdstring = "1000";
 
-        // Token: 0x0400006A RID: 106
         public string mp4path;
 
-        // Token: 0x0400006B RID: 107
         public VideoPlayer vp;
 
-        // Token: 0x0400006C RID: 108
         private float sliderValue = 0f;
 
-        // Token: 0x0400006D RID: 109
         private float maxSliderValue = 1f;
 
     }

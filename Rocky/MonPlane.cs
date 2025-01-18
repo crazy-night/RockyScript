@@ -1,238 +1,258 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using HarmonyLib;
 using Studio;
 using UnityEngine;
+using KKAPI.Utilities;
 
 namespace RockyScript
 {
-    // Token: 0x0200000D RID: 13
-    public class MonPlane : MonoBehaviour
+    public class MonPlane : RockyPlane
     {
-        // Token: 0x0600005C RID: 92 RVA: 0x000038C0 File Offset: 0x00001AC0
-        private void Start()
+        public override void Start()
         {
-            this.m_renderer = base.GetComponent<Renderer>();
-            this.planeCam = base.gameObject.GetComponentInChildren<Camera>();
+            DownSampling = 1;
+            curAllCameras = new List<OCICamera>();
+            m_renderer = base.GetComponent<Renderer>();
+            planeCam = base.gameObject.GetComponentInChildren<Camera>();
+            cam_dickey = -1;
+            cam_spd = 30;
+
             Vector3 position = base.gameObject.GetComponentInChildren<Camera>().transform.position;
             Quaternion rotation = base.gameObject.GetComponentInChildren<Camera>().transform.rotation;
-            this.curTestCameras = Camera.allCameras;
-            foreach (Camera camera in this.curTestCameras)
+            curTestCameras = Camera.allCameras;
+
+            foreach (Camera camera in curTestCameras)
             {
                 if (camera.name.Equals("MainCamera"))
                 {
-                    this.planeCam.CopyFrom(camera);
-                    this.planeCam.targetDisplay = 7;
+                    planeCam.CopyFrom(camera);
+                    planeCam.targetDisplay = 7;
                     break;
                 }
             }
-            this.planeCam.transform.position = position;
-            this.planeCam.transform.rotation = rotation;
+            planeCam.transform.position = position;
+            planeCam.transform.rotation = rotation;
+
+            cam_fov = (int)planeCam.fieldOfView;
+            cam_far = (int)planeCam.farClipPlane;
+            cam_ortho = (int)planeCam.orthographicSize;
+            _ortho = planeCam.orthographic;
+
             double num = (double)(base.gameObject.GetComponent<MeshFilter>().mesh.bounds.size.x * Mathf.Abs(base.gameObject.transform.lossyScale.x));
             double num2 = (double)(base.gameObject.GetComponent<MeshFilter>().mesh.bounds.size.y * Mathf.Abs(base.gameObject.transform.lossyScale.y));
             double plane_ratio = num2 / num;
-            this.cam_width = this.cam_tex;
-            this.cam_height = (int)((double)this.cam_tex * plane_ratio);
-            this.RefreshCam();
-            this.curAllCameras = new List<OCICamera>();
+            cam_tex = 1024;
+            cam_width = cam_tex;
+            cam_height = (int)((double)cam_tex * plane_ratio);
+
+           
+            RefreshCam();
 
         }
 
-        public void DoMyWindow()
+        public override void DoMyWindow()
         {
             GUILayout.BeginVertical();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Camera name: ");
+            GUILayout.Label("Camera name: ", IMGUIUtils.EmptyLayoutOptions);
             GUILayout.FlexibleSpace();
-            GUILayout.Label(this.cam_name);
+            GUILayout.Label(cam_name, IMGUIUtils.EmptyLayoutOptions);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            if (this._ortho)
+            if (_ortho)
             {
 
-                if (GUILayout.Button("Current: Orthographic used"))
+                if (GUILayout.Button("Current: Orthographic used", IMGUIUtils.EmptyLayoutOptions))
                 {
-                    this._ortho = false;
+                    _ortho = false;
                 }
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Ortho Size: ");
+                GUILayout.Label("Ortho Size: ", IMGUIUtils.EmptyLayoutOptions);
                 GUILayout.FlexibleSpace();
-                this.orthostring = GUILayout.TextField(this.orthostring, 3);
+                orthostring = GUILayout.TextField(orthostring, 3, GUILayout.Width(100));
                 GUILayout.EndHorizontal();
             }
             else
             {
-                if (GUILayout.Button("Current: Perspective used"))
+                if (GUILayout.Button("Current: Perspective used", IMGUIUtils.EmptyLayoutOptions))
                 {
-                    this._ortho = true;
+                    _ortho = true;
                 }
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Field of View: ");
+                GUILayout.Label("Field of View: ", IMGUIUtils.EmptyLayoutOptions);
                 GUILayout.FlexibleSpace();
-                this.fovstring = GUILayout.TextField(this.fovstring, 3);
+                fovstring = GUILayout.TextField(fovstring, 3, GUILayout.Width(100));
                 GUILayout.EndHorizontal();
             }
 
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Far Clip Plane: ");
+            GUILayout.Label("Far Clip Plane: ", IMGUIUtils.EmptyLayoutOptions);
             GUILayout.FlexibleSpace();
-            this.farstring = GUILayout.TextField(this.farstring, 4);
+            farstring = GUILayout.TextField(farstring, 5, GUILayout.Width(100));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Follow Speed: ");
+            GUILayout.Label("Follow Speed: ", IMGUIUtils.EmptyLayoutOptions);
             GUILayout.FlexibleSpace();
-            this.spdstring = GUILayout.TextField(this.spdstring, 3);
+            spdstring = GUILayout.TextField(spdstring, 3, GUILayout.Width(100));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Texture Resolution: ");
+            GUILayout.Label("Texture Resolution: ", IMGUIUtils.EmptyLayoutOptions);
             GUILayout.FlexibleSpace();
-            if (this.cam_tex > 64 && GUILayout.Button("-", GUILayout.Width(25), GUILayout.Height(25)))
+            if (cam_tex > 128 && GUILayout.Button("-", GUILayout.Width(25), GUILayout.Height(25)))
             {
-                this.cam_tex >>= 1;
+                cam_tex >>= 1;
             }
-            GUILayout.Label(this.cam_tex.ToString(), GUILayout.Height(25));
-            if (this.cam_tex >= 16384)
+            GUILayout.Label(cam_tex.ToString(), GUILayout.Height(25));
+            if (cam_tex >= 16384)
             {
                 GUILayout.Space(25);
             }
-            else if(GUILayout.Button("+", GUILayout.Width(25), GUILayout.Height(25)))
+            else if (GUILayout.Button("+", GUILayout.Width(25), GUILayout.Height(25)))
             {
-                this.cam_tex <<= 1;
+                cam_tex <<= 1;
             }
             GUILayout.EndHorizontal();
 
-            if (this._showPlane)
+            if (sss != null)
             {
-                if (GUILayout.Button("Current: Show Plane"))
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("SSS Downsampling: ", IMGUIUtils.EmptyLayoutOptions);
+                GUILayout.FlexibleSpace();
+                if (DownSampling > 1 && GUILayout.Button("-", GUILayout.Width(25), GUILayout.Height(25)))
                 {
-                    this._showPlane = false;
+                    DownSampling >>= 1;
+                    sss.SetDownSampling(DownSampling);
                 }
-            }
-            else if (GUILayout.Button("Current: Hide Plane"))
-            {
-                this._showPlane = true;
+                GUILayout.Label(DownSampling.ToString(), GUILayout.Height(25));
+                if (DownSampling >= 32)
+                {
+                    GUILayout.Space(25);
+                }
+                else if (GUILayout.Button("+", GUILayout.Width(25), GUILayout.Height(25)))
+                {
+                    DownSampling <<= 1;
+                    sss.SetDownSampling(DownSampling);
+                }
+                GUILayout.EndHorizontal();
             }
 
-            if (this._follow)
+
+            if (_showPlane)
             {
-                if (GUILayout.Button("Current: Follow Camera"))
+                if (GUILayout.Button("Current: Show Plane", IMGUIUtils.EmptyLayoutOptions))
                 {
-                    this._follow = false;
+                    _showPlane = false;
                 }
             }
-            else if (GUILayout.Button("Current: Not Follow Camera"))
+            else if (GUILayout.Button("Current: Hide Plane", IMGUIUtils.EmptyLayoutOptions))
             {
-                this._follow = true;
+                _showPlane = true;
             }
 
-            GUILayout.FlexibleSpace();
-            if (GUILayout.Button("Refresh Camera List"))
+            if (_follow)
             {
-                this.curAllCameras.Clear();
-                this.curAllCameras.AddRange(Singleton<Studio.Studio>.Instance.dicObjectCtrl.Where(delegate (KeyValuePair<int, ObjectCtrlInfo> kvp)
+                if (GUILayout.Button("Current: Follow Camera", IMGUIUtils.EmptyLayoutOptions))
                 {
-                    KeyValuePair<int, ObjectCtrlInfo> keyValuePair = kvp;
-                    return keyValuePair.Value is OCICamera;
-                }).Select(delegate (KeyValuePair<int, ObjectCtrlInfo> kvp)
-                {
-                    KeyValuePair<int, ObjectCtrlInfo> keyValuePair = kvp;
-                    return keyValuePair.Value as OCICamera;
-                }));
+                    _follow = false;
+                }
             }
-            if (this.curAllCameras != null && this.curAllCameras.Count > 0)
+            else if (GUILayout.Button("Current: Not Follow Camera", IMGUIUtils.EmptyLayoutOptions))
             {
-                this.scrollPosition = GUILayout.BeginScrollView(this.scrollPosition, new GUILayoutOption[]
-                {
+                _follow = true;
+            }
+
+            if (GUILayout.Button("Refresh Camera List", IMGUIUtils.EmptyLayoutOptions))
+            {
+                curAllCameras.Clear();
+                curAllCameras.AddRange(Singleton<Studio.Studio>.Instance.dicObjectCtrl.Where(delegate (KeyValuePair<int, ObjectCtrlInfo> kvp)
+               {
+                   KeyValuePair<int, ObjectCtrlInfo> keyValuePair = kvp;
+                   return keyValuePair.Value is OCICamera;
+               }).Select(delegate (KeyValuePair<int, ObjectCtrlInfo> kvp)
+               {
+                   KeyValuePair<int, ObjectCtrlInfo> keyValuePair = kvp;
+                   return keyValuePair.Value as OCICamera;
+               }));
+            }
+            if (curAllCameras != null && curAllCameras.Count > 0)
+            {
+                scrollPosition = GUILayout.BeginScrollView(scrollPosition, new GUILayoutOption[]
+               {
                     GUILayout.Width(280f),
                     GUILayout.Height(150f)
-                });
-                foreach (OCICamera ocicamera in this.curAllCameras)
+               });
+                foreach (OCICamera ocicamera in curAllCameras)
                 {
-                    if (GUILayout.Button(ocicamera.cameraInfo.name))
+                    if (GUILayout.Button(ocicamera.cameraInfo.name, IMGUIUtils.EmptyLayoutOptions))
                     {
-                        this.cam_dickey = ocicamera.objectInfo.dicKey;
-                        this.cam_name = ocicamera.cameraInfo.name;
+                        cam_dickey = ocicamera.objectInfo.dicKey;
+                        cam_name = ocicamera.cameraInfo.name;
                     }
                 }
                 GUILayout.EndScrollView();
             }
 
-            if (GUILayout.Button("Refresh Plane"))
+            GUILayout.FlexibleSpace();
+
+            if (GUILayout.Button("Refresh Plane", IMGUIUtils.EmptyLayoutOptions))
             {
                 try
                 {
-                    this.cam_fov = (int)short.Parse(this.fovstring);
-                    this.cam_far = (int)short.Parse(this.farstring);
-                    this.cam_spd = (int)short.Parse(this.spdstring);
-                    this.cam_ortho = (int)short.Parse(this.orthostring);
+                    cam_fov = (int)short.Parse(fovstring);
+                    cam_far = (int)short.Parse(farstring);
+                    cam_spd = (int)short.Parse(spdstring);
+                    cam_ortho = (int)short.Parse(orthostring);
                 }
                 catch
                 {
-                    this.cam_fov = 23;
-                    this.cam_far = 1000;
-                    this.cam_spd = 30;
-                    this.cam_ortho = 3;
+                    Initialize();
                 }
-                if (this.cam_fov < 0)
-                {
-                    this.cam_fov = 23;
-                }
-                if (this.cam_far < 0)
-                {
-                    this.cam_far = 1000;
-                }
-                if (this.cam_spd < 0)
-                {
-                    this.cam_spd = 30;
-                }
-
-                if (this.cam_ortho <= 0)
-                {
-                    this.cam_ortho = 3;
-                }
+                
                 double num2 = (double)(base.gameObject.GetComponent<MeshFilter>().mesh.bounds.size.x * Mathf.Abs(base.gameObject.transform.lossyScale.x));
                 double num3 = (double)(base.gameObject.GetComponent<MeshFilter>().mesh.bounds.size.y * Mathf.Abs(base.gameObject.transform.lossyScale.y));
                 double plane_ratio = num3 / num2;
-                this.cam_width = this.cam_tex;
-                this.cam_height = Math.Min(1 << 14, (int)((double)this.cam_tex * plane_ratio));
-                this.RefreshCam();
+                cam_width = cam_tex;
+                cam_height = Math.Min(1 << 14, (int)((double)cam_tex * plane_ratio));
+                RefreshCam();
             }
             GUILayout.EndVertical();
         }
 
-        // Token: 0x0600005F RID: 95 RVA: 0x000040D4 File Offset: 0x000022D4
         public void RefreshCam()
         {
-            object obj = MonPlane.lockObj;
-            lock (obj)
+            lock (lockObj)
             {
-                if (this.m_renderTexture != null)
+                Debug("Refresh Camera");
+                planeCam.enabled = false;
+                if (m_renderTexture != null)
                 {
-                    this.planeCam.targetTexture = null;
-                    this.m_renderer.material.mainTexture = null;
-                    this.m_renderTexture.Release();
+                    planeCam.targetTexture = null;
+                    m_renderer.material.mainTexture = null;
+                    m_renderTexture.Release();
                 }
-                this.m_renderTexture = new RenderTexture(this.cam_width, this.cam_height, 16, RenderTextureFormat.ARGB32);
-                if (this.cam_dickey != -1)
+                m_renderTexture = new RenderTexture(cam_width, cam_height, 16, RenderTextureFormat.ARGB32);
+                if (cam_dickey != -1)
                 {
                     try
                     {
-                        ObjectCtrlInfo objectCtrlInfo = Singleton<Studio.Studio>.Instance.dicObjectCtrl[this.cam_dickey];
+                        ObjectCtrlInfo objectCtrlInfo = Singleton<Studio.Studio>.Instance.dicObjectCtrl[cam_dickey];
                         if (objectCtrlInfo is OCICamera)
                         {
                             OCICamera ocicamera = (OCICamera)objectCtrlInfo;
-                            this.m_camTransform = ocicamera.objectItem.transform;
-                            this.planeCam.transform.position = this.m_camTransform.transform.position;
-                            this.planeCam.transform.rotation = this.m_camTransform.transform.rotation;
+                            m_camTransform = ocicamera.objectItem.transform;
+                            planeCam.transform.position = m_camTransform.transform.position;
+                            planeCam.transform.rotation = m_camTransform.transform.rotation;
                         }
                     }
                     catch
@@ -240,129 +260,246 @@ namespace RockyScript
                         return;
                     }
                 }
-                if (this._showPlane)
+                if (_showPlane)
                 {
-                    this.planeCam.cullingMask |= this.mask;
+                    planeCam.cullingMask |= mask;
                 }
                 else
                 {
-                    this.planeCam.cullingMask &= ~this.mask;
+                    planeCam.cullingMask &= ~mask;
                 }
-                this.planeCam.cullingMask |= 1 << 9;
-                this.planeCam.cullingMask &= ~(1 << 14);
+                planeCam.cullingMask |= 1 << 9;
+                planeCam.cullingMask &= ~(1 << 14);
 
-                this.planeCam.fieldOfView = (float)this.cam_fov;
-                this.planeCam.farClipPlane = (float)this.cam_far;
-                this.planeCam.orthographic = this._ortho;
-                this.planeCam.orthographicSize = (float)this.cam_ortho;
-                this.planeCam.targetTexture = this.m_renderTexture;
-                this.m_renderer.material.mainTexture = this.m_renderTexture;
+                planeCam.fieldOfView = (float)cam_fov;
+                planeCam.farClipPlane = (float)cam_far;
+                planeCam.orthographic = _ortho;
+                planeCam.orthographicSize = (float)cam_ortho;
+                planeCam.targetTexture = m_renderTexture;
+                m_renderer.material.mainTexture = m_renderTexture;
+                planeCam.enabled = true;
 
-                this.farstring = this.cam_far.ToString();
-                this.fovstring = this.cam_fov.ToString();
-                this.spdstring = this.cam_spd.ToString();
-                this.orthostring = this.cam_ortho.ToString();
+                SetString();
             }
         }
-        // Token: 0x06000060 RID: 96 RVA: 0x00004294 File Offset: 0x00002494
         private void LateUpdate()
         {
-            if (this._follow && this.cam_dickey != -1 && this.m_camTransform != null && this.m_camTransform.hasChanged)
+            if (_follow && cam_dickey != -1 && m_camTransform != null && m_camTransform.hasChanged)
             {
-                object obj = MonPlane.lockObj;
-                lock (obj)
+                lock (lockObj)
                 {
-                    this.planeCam.transform.position = Vector3.Lerp(this.planeCam.transform.position, this.m_camTransform.transform.position, (float)this.cam_spd * Time.deltaTime);
-                    this.planeCam.transform.rotation = Quaternion.Slerp(this.planeCam.transform.rotation, this.m_camTransform.transform.rotation, (float)this.cam_spd * Time.deltaTime);
+                    planeCam.transform.position = Vector3.Lerp(planeCam.transform.position, m_camTransform.transform.position, (float)cam_spd * Time.deltaTime);
+                    planeCam.transform.rotation = Quaternion.Slerp(planeCam.transform.rotation, m_camTransform.transform.rotation, (float)cam_spd * Time.deltaTime);
                 }
             }
         }
 
-        // Token: 0x06000063 RID: 99 RVA: 0x000022DC File Offset: 0x000004DC
         private void OnDestroy()
         {
-            this.planeCam.targetTexture = null;
-            this.m_renderer.material.mainTexture = null;
-            this.m_renderTexture.Release();
+            planeCam.targetTexture = null;
+            m_renderer.material.mainTexture = null;
+            m_renderTexture.Release();
         }
 
-        // Token: 0x04000047 RID: 71
+        public override void Copy<T>(T plane)
+        {
+            Debug("Copy monplane begin!");
+            if (plane == null)
+            {
+                throw new ArgumentNullException("Reference of monplane is null!");
+            }
+            else if (plane is MonPlane monPlane)
+            {
+                _showPlane = monPlane._showPlane;
+                cam_dickey = monPlane.cam_dickey;
+                cam_far = monPlane.cam_far;
+                cam_fov = monPlane.cam_fov;
+                cam_spd = monPlane.cam_spd;
+                cam_width = monPlane.cam_width;
+                cam_height = monPlane.cam_height;
+                cam_tex = monPlane.cam_tex;
+                _ortho = monPlane._ortho;
+                cam_ortho = monPlane.cam_ortho;
+                _follow = monPlane._follow;
+                DownSampling = monPlane.DownSampling;
+                RefreshCam();
+            }
+            else
+            {
+                throw new Exception("Not MonPlane!");
+            }
+            Debug("Copy monplane end!");
+        }
+
+        private void Initialize()
+        {
+            cam_far = 15000;
+            cam_fov = 23;
+            cam_spd = 30;
+            cam_ortho = 10;
+        }
+        private void SetString()
+        {
+            farstring = cam_far.ToString();
+            fovstring = cam_fov.ToString();
+            spdstring = cam_spd.ToString();
+            orthostring = cam_ortho.ToString();
+        }
+
         public bool _showPlane;
 
-        // Token: 0x04000048 RID: 72
-        public bool _ortho = true;
+        public bool _ortho;
 
-        // Token: 0x04000049 RID: 73
         public Renderer m_renderer;
 
-        // Token: 0x0400004A RID: 74
-        public int cam_dickey = -1;
+        public int cam_dickey;
 
-        // Token: 0x0400004B RID: 75
         private string cam_name = "null";
 
-        // Token: 0x0400004C RID: 76
-        public int cam_far = 1000;
-
-        // Token: 0x0400004D RID: 77
-        private string farstring = "1000";
-
-        // Token: 0x0400004E RID: 78
-        public int cam_fov = 23;
-
-        // Token: 0x0400004F RID: 79
-        private string fovstring = "23";
-
-        // Token: 0x04000050 RID: 80
-        public int cam_spd = 30;
-
-        // Token: 0x04000051 RID: 81
-        private string spdstring = "30";
-
-        // Token: 0x04000052 RID: 82
-        public int cam_tex = 1024;
-
-        // Token: 0x04000054 RID: 84
-        public int cam_ortho = 3;
-
-        // Token: 0x04000055 RID: 85
-        private string orthostring = "3";
-
-        // Token: 0x04000056 RID: 86
         public int cam_width;
 
-        // Token: 0x04000057 RID: 87
         public int cam_height;
 
-        // Token: 0x04000058 RID: 88
         public Vector2 scrollPosition;
 
-        // Token: 0x04000059 RID: 89
         public Camera planeCam;
 
-        // Token: 0x0400005A RID: 90
-        private static object lockObj = new object();
+        private object lockObj = new object();
 
-        // Token: 0x0400005C RID: 92
         public RenderTexture m_renderTexture;
 
-        // Token: 0x0400005D RID: 93
         private List<OCICamera> curAllCameras;
 
-        // Token: 0x0400005E RID: 94
         public Transform m_camTransform;
 
-        // Token: 0x0400005F RID: 95
         public Camera[] curTestCameras;
 
-        // Token: 0x04000060 RID: 96
         public OCIItem monplane;
 
-        // Token: 0x04000061 RID: 97
         public int mask = 536870912;
 
 
         public bool _follow;
+
+        public SSSHook sss;
+
+        private int downsampling;
+
+        private int FarClipPlane;
+        private int FieldOfView;
+        private int Speed;
+        private int OrthoSize;
+
+        private string farstring;
+        private string fovstring;
+        private string spdstring;
+        private string orthostring;
+
+        public int cam_far
+        {
+            get
+            {
+                return FarClipPlane;
+            }
+            set
+            {
+                if (value <= 0)
+                {
+                    FarClipPlane = 15000;
+                }
+                else
+                    FarClipPlane = value;
+            }
+        }
+
+        public int cam_fov
+        {
+            get
+            {
+                return FieldOfView;
+            }
+            set
+            {
+                if (value <= 0)
+                {
+                    FieldOfView = 23;
+                }
+                else
+                    FieldOfView = value;
+            }
+        }
+
+        public int cam_spd
+        {
+            get
+            {
+                return Speed;
+            }
+            set
+            {
+                if (value <= 0)
+                {
+                    Speed = 30;
+                }
+                else
+                    Speed = value;
+            }
+        }
+
+
+        public int cam_ortho
+        {
+            get
+            {
+                return OrthoSize;
+            }
+            set
+            {
+                if (value <= 0)
+                {
+                    OrthoSize = 10;
+                }
+                else
+                    OrthoSize = value;
+            }
+        }
+
+
+        private int TexResolution;
+        public int cam_tex
+        {
+            get
+            {
+                return TexResolution;
+            }
+            set
+            {
+                if (value < 128 || value > 16384)
+                {
+                    TexResolution = 1024;
+                }
+                else
+                    TexResolution = value;
+            }
+        }
+
+        public int DownSampling
+        {
+            get { return downsampling; }
+            set
+            {
+                if (value <= 0)
+                {
+                    downsampling = 1;
+                }
+                else if ((value & (value - 1)) != 0)
+                {
+                    downsampling = value + 1;
+                }
+                else
+                    downsampling = value;
+            }
+        }
     }
 }
 
