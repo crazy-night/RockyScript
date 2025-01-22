@@ -30,7 +30,7 @@ namespace RockyScript.SaveLoad
 
         
 
-        internal override void Info2Plane<T>(T plane)
+        internal override void Info2Plane(RockyPlane plane)
         {
             Debug("Mp4Plane Loading...");
             if (plane == null)

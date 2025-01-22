@@ -30,7 +30,7 @@ namespace RockyScript.SaveLoad
         }
 
         internal abstract byte[] Serialize();
-        internal abstract void Info2Plane<T>(T plane) where T : RockyPlane;
+        internal abstract void Info2Plane(RockyPlane plane);
 
         public static void Debug(string _text)
         {

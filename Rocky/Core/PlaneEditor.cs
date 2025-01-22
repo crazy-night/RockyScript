@@ -7,6 +7,7 @@ using KKAPI.Studio.SaveLoad;
 using UnityEngine;
 using RockyScript.SaveLoad;
 using System;
+using RockyScript.Hook;
 
 namespace RockyScript.Core
 {
@@ -52,7 +53,7 @@ namespace RockyScript.Core
             UnityEngine.Object.DontDestroyOnLoad(gameObject);
             PlaneEditorMgr.Install(gameObject);
 
-            SSSHook.Initialize();
+            GraphicHook.Initialize();
         }
 
         public static void Debug(string _text)

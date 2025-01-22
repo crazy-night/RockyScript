@@ -12,7 +12,7 @@ namespace RockyScript
     public class GifPlane : RockyPlane
     {
 
-        public override void Start()
+        public override void Awake()
         {
             this.material = base.GetComponent<Renderer>().material;
             this.gameObject.layer = 12;

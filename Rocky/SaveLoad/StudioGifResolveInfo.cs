@@ -25,9 +25,9 @@ namespace RockyScript.SaveLoad
         {
         }
 
-        
 
-        internal override void Info2Plane<T>(T plane)
+
+        internal override void Info2Plane(RockyPlane plane)
         {
             Debug("GifPlane Loading...");
             if (plane == null)

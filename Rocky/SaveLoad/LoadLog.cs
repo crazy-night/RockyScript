@@ -95,7 +95,7 @@ namespace RockyScript.SaveLoad
         }
         protected override void OnObjectDeleted(ObjectCtrlInfo objectCtrlInfo)
         {
-            if(objectCtrlInfo is OCIItem ociItem)
+            if (objectCtrlInfo is OCIItem ociItem)
             {
                 PlaneEditorMgr.Remove(ociItem);
             }
@@ -126,7 +126,7 @@ namespace RockyScript.SaveLoad
             if (list.Count > 0)
             {
                 dictionary.Add(key, list);
-                Debug(key+" Add to Dictionary");
+                Debug(key + " Add to Dictionary");
             }
         }
 
@@ -140,7 +140,7 @@ namespace RockyScript.SaveLoad
             if (sceneExtendedData.data.ContainsKey(key))
             {
                 List<TInfo> list = (from x in (object[])sceneExtendedData.data[key]
-                                                    select StudioResolveInfoBase.Deserialize<TInfo>((byte[])x)).ToList();
+                                    select StudioResolveInfoBase.Deserialize<TInfo>((byte[])x)).ToList();
 
                 foreach (StudioResolveInfoBase info in list)
                 {
@@ -149,11 +149,15 @@ namespace RockyScript.SaveLoad
                     Debug("Loading " + key + ", DicKey = " + dicKey.ToString());
                     if (dicKey != -1 && loadedItems.TryGetValue(dicKey, out ObjectCtrlInfo objectCtrlInfo) && objectCtrlInfo is OCIItem ociItem)
                     {
-                        RockyPlane plane = PlaneEditorMgr.GetPlane(ociItem);
+                        TPlane plane = (TPlane)PlaneEditorMgr.GetPlane(ociItem);
                         if (plane != null)
                         {
                             Debug("Get Plane Successfully!");
-                            info.Info2Plane<RockyPlane>(plane);
+                            if (info is StudioMonResolveInfo monInfo && monInfo.cam_dickey != -1)
+                            {
+                                monInfo.cam_dickey = StudioObjectExtensions.GetSceneId(loadedItems[monInfo.cam_dickey]);
+                            }
+                            info.Info2Plane(plane);
                         }
                     }
                     Debug("Loading Successfully!");

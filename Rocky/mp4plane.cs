@@ -9,7 +9,7 @@ namespace RockyScript
 {
     public class mp4plane : RockyPlane
     {
-        public override void Start()
+        public override void Awake()
         {
             this.vp = base.gameObject.AddComponent<VideoPlayer>();
         }

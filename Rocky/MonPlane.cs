@@ -5,40 +5,27 @@ using HarmonyLib;
 using Studio;
 using UnityEngine;
 using KKAPI.Utilities;
+using UnityEngine.Rendering.PostProcessing;
+using RockyScript.Hook;
 
 namespace RockyScript
 {
     public class MonPlane : RockyPlane
     {
-        public override void Start()
+        public override void Awake()
         {
-            DownSampling = 1;
             curAllCameras = new List<OCICamera>();
             m_renderer = base.GetComponent<Renderer>();
             planeCam = base.gameObject.GetComponentInChildren<Camera>();
+
+
             cam_dickey = -1;
-            cam_spd = 30;
+            cam_name = "null";
+            DownSampling = 1;
 
-            Vector3 position = base.gameObject.GetComponentInChildren<Camera>().transform.position;
-            Quaternion rotation = base.gameObject.GetComponentInChildren<Camera>().transform.rotation;
-            curTestCameras = Camera.allCameras;
-
-            foreach (Camera camera in curTestCameras)
-            {
-                if (camera.name.Equals("MainCamera"))
-                {
-                    planeCam.CopyFrom(camera);
-                    planeCam.targetDisplay = 7;
-                    break;
-                }
-            }
-            planeCam.transform.position = position;
-            planeCam.transform.rotation = rotation;
-
-            cam_fov = (int)planeCam.fieldOfView;
-            cam_far = (int)planeCam.farClipPlane;
-            cam_ortho = (int)planeCam.orthographicSize;
+            Initialize();
             _ortho = planeCam.orthographic;
+
 
             double num = (double)(base.gameObject.GetComponent<MeshFilter>().mesh.bounds.size.x * Mathf.Abs(base.gameObject.transform.lossyScale.x));
             double num2 = (double)(base.gameObject.GetComponent<MeshFilter>().mesh.bounds.size.y * Mathf.Abs(base.gameObject.transform.lossyScale.y));
@@ -47,10 +34,44 @@ namespace RockyScript
             cam_width = cam_tex;
             cam_height = (int)((double)cam_tex * plane_ratio);
 
-           
-            RefreshCam();
-
         }
+
+        public void Start()
+        {
+            if (cam_dickey == -1)
+            {
+                Vector3 position = planeCam.transform.position;
+                Quaternion rotation = planeCam.transform.rotation;
+
+                if (PostProcessHook.MainCamera != null)
+                {
+                    planeCam.CopyFrom(PostProcessHook.MainCamera);
+                    planeCam.targetDisplay = 7;
+                    cam_name = "Main Camera";
+                }
+                else
+                {
+                    throw new Exception("Cannot find main camera");
+                }
+
+                planeCam.transform.position = position;
+                planeCam.transform.rotation = rotation;
+
+
+            }
+            if (PostProcessHook.Resources != null)
+            {
+                PostProcessLayer postProcessLayer = planeCam.gameObject.GetOrAddComponent<PostProcessLayer>();
+
+                postProcessLayer.Init(PostProcessHook.Resources);
+                postProcessLayer.volumeTrigger = planeCam.transform;
+                postProcessLayer.volumeLayer = PostProcessHook.volumeLayer;
+                Debug("Init PostProcessLayer Successfully!");
+            }
+
+            RefreshCam();
+        }
+
 
         public override void DoMyWindow()
         {
@@ -197,7 +218,6 @@ namespace RockyScript
                     if (GUILayout.Button(ocicamera.cameraInfo.name, IMGUIUtils.EmptyLayoutOptions))
                     {
                         cam_dickey = ocicamera.objectInfo.dicKey;
-                        cam_name = ocicamera.cameraInfo.name;
                     }
                 }
                 GUILayout.EndScrollView();
@@ -234,7 +254,6 @@ namespace RockyScript
             lock (lockObj)
             {
                 Debug("Refresh Camera");
-                planeCam.enabled = false;
                 if (m_renderTexture != null)
                 {
                     planeCam.targetTexture = null;
@@ -244,20 +263,14 @@ namespace RockyScript
                 m_renderTexture = new RenderTexture(cam_width, cam_height, 16, RenderTextureFormat.ARGB32);
                 if (cam_dickey != -1)
                 {
-                    try
+                    ObjectCtrlInfo objectCtrlInfo;
+                    Singleton<Studio.Studio>.Instance.dicObjectCtrl.TryGetValue(cam_dickey, out objectCtrlInfo);
+                    if (objectCtrlInfo != null && objectCtrlInfo is OCICamera ocicamera)
                     {
-                        ObjectCtrlInfo objectCtrlInfo = Singleton<Studio.Studio>.Instance.dicObjectCtrl[cam_dickey];
-                        if (objectCtrlInfo is OCICamera)
-                        {
-                            OCICamera ocicamera = (OCICamera)objectCtrlInfo;
-                            m_camTransform = ocicamera.objectItem.transform;
-                            planeCam.transform.position = m_camTransform.transform.position;
-                            planeCam.transform.rotation = m_camTransform.transform.rotation;
-                        }
-                    }
-                    catch
-                    {
-                        return;
+                        m_camTransform = ocicamera.objectItem.transform;
+                        cam_name = ocicamera.cameraInfo.name;
+                        planeCam.transform.position = m_camTransform.transform.position;
+                        planeCam.transform.rotation = m_camTransform.transform.rotation;
                     }
                 }
                 if (_showPlane)
@@ -277,7 +290,6 @@ namespace RockyScript
                 planeCam.orthographicSize = (float)cam_ortho;
                 planeCam.targetTexture = m_renderTexture;
                 m_renderer.material.mainTexture = m_renderTexture;
-                planeCam.enabled = true;
 
                 SetString();
             }
@@ -333,7 +345,7 @@ namespace RockyScript
 
         private void Initialize()
         {
-            cam_far = 15000;
+            cam_far = 1500;
             cam_fov = 23;
             cam_spd = 30;
             cam_ortho = 10;
@@ -354,7 +366,7 @@ namespace RockyScript
 
         public int cam_dickey;
 
-        private string cam_name = "null";
+        private string cam_name;
 
         public int cam_width;
 
@@ -372,16 +384,15 @@ namespace RockyScript
 
         public Transform m_camTransform;
 
-        public Camera[] curTestCameras;
 
         public OCIItem monplane;
 
-        public int mask = 536870912;
+        public readonly int mask = 536870912;
 
 
         public bool _follow;
 
-        public SSSHook sss;
+        public GraphicHook sss;
 
         private int downsampling;
 

@@ -7,7 +7,7 @@ namespace RockyScript
     public abstract class RockyPlane : MonoBehaviour
     {
         public abstract void DoMyWindow();
-        public abstract void Start();
+        public abstract void Awake();
 
         public abstract void Copy<T>(T plane) where T: RockyPlane;
 
