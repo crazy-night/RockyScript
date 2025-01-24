@@ -69,7 +69,7 @@ namespace RockyScript.Core
 
         public const string Name = "RockyPlane Editor";
 
-        public const string Version = "1.1.0";
+        public const string Version = "1.1.1";
 
         internal new static ManualLogSource Logger;
     }
