@@ -14,14 +14,19 @@ namespace RockyScript
     {
         public override void Awake()
         {
+            Debug("Awake...");
             curAllCameras = new List<OCICamera>();
             m_renderer = base.GetComponent<Renderer>();
             planeCam = base.gameObject.GetComponentInChildren<Camera>();
+            planeCam.cullingMask = 544800023;
+            planeCam.clearFlags = CameraClearFlags.Skybox;
 
 
             cam_dickey = -1;
             cam_name = "null";
             DownSampling = 1;
+            mask = 1 << 29;
+            
 
             Initialize();
             _ortho = planeCam.orthographic;
@@ -33,11 +38,14 @@ namespace RockyScript
             cam_tex = 1024;
             cam_width = cam_tex;
             cam_height = (int)((double)cam_tex * plane_ratio);
+            
+            Debug("Awake Completed");
 
         }
 
         public void Start()
         {
+            Debug("Start...");
             if (cam_dickey == -1)
             {
                 Vector3 position = planeCam.transform.position;
@@ -47,6 +55,7 @@ namespace RockyScript
                 {
                     planeCam.CopyFrom(PostProcessHook.MainCamera);
                     planeCam.targetDisplay = 7;
+                    planeCam.clearFlags = CameraClearFlags.Skybox;
                     cam_name = "Main Camera";
                 }
                 else
@@ -59,6 +68,7 @@ namespace RockyScript
 
 
             }
+
             if (PostProcessHook.Resources != null)
             {
                 PostProcessLayer postProcessLayer = planeCam.gameObject.GetOrAddComponent<PostProcessLayer>();
@@ -69,7 +79,9 @@ namespace RockyScript
                 Debug("Init PostProcessLayer Successfully!");
             }
 
+
             RefreshCam();
+            Debug("Start Completed");
         }
 
 
@@ -387,7 +399,7 @@ namespace RockyScript
 
         public OCIItem monplane;
 
-        public readonly int mask = 536870912;
+        public int mask;
 
 
         public bool _follow;

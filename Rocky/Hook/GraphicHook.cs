@@ -31,8 +31,8 @@ namespace RockyScript.Hook
             if (monPlane != null && component != null)
             {
                 monPlane.sss = new GraphicHook(component, monPlane.DownSampling);
+                Debug("Patch SSS for MonPlane Successfully!");
             }
-            Debug("Patch SSS for MonPlane Successfully!");
         }
 
         public GraphicHook(Component component, int downsampling)

@@ -11,7 +11,7 @@ using RockyScript.Hook;
 
 namespace RockyScript.Core
 {
-    [BepInPlugin("PhoeniX.RockyScript.HS2", "RockyPlane Editor", "1.1.0")]
+    [BepInPlugin("PhoeniX.RockyScript.HS2", "RockyPlane Editor", "1.1.1")]
     [BepInDependency(KoikatuAPI.GUID, "1.4")]
     [BepInProcess("StudioNEOV2.exe")]
     public class PlaneEditor : BaseUnityPlugin
